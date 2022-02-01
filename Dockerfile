@@ -1,17 +1,20 @@
-FROM node:16.13.2
+FROM node:16.13.2 as builder
 MAINTAINER G0Yang<ender35841@gmail.com>
-
-RUN apt-get update -y && apt-get install git nano vim tzdata -y
 
 WORKDIR /project/upbitAutoTading
 
 COPY ./ /project/upbitAutoTading
 
-RUN npm install -g pm2 node-gyp
-RUN npm install
+RUN npm install && npm run build
 
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
 
-EXPOSE 80 443 8080
-CMD [ "pm2-runtime", "start", "ecosystem.config.js", "--env", "production"]
+FROM node:16.13.2
+
+RUN npm install -g serve
+
+WORKDIR /project/upbitAutoTading
+
+COPY --from=builder /project/upbitAutoTading/build ./build/
+
+EXPOSE 3000
+CMD [ "serve", "-s", "build"]

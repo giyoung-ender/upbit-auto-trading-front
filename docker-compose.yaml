@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  upbitApp:
+    image: upbit_app:latest
+    container_name: upbitApp
+    restart: always
+    ports:
+      - "3000:3000"
