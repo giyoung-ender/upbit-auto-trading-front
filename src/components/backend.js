@@ -19,9 +19,41 @@ const backend = {
         const response = await axios.get(url);
         return response.data;
     },
-    getCandlesMinutes: async (market, count, unit= 1) => {
+    getCandlesMinutes: async (market, count, unit = 1) => {
         const url = `http://${backendServerIp}:${backendServerPort}/quotation/candles/minutes/${unit}?market=${market}&count=${count}`;
         const response = await axios.get(url);
+        return response.data;
+    },
+    putServerAccount: async (accessKey, secretKey) => {
+        const url = `http://${backendServerIp}:${backendServerPort}/server/account`;
+        const data = {
+            "access_key": accessKey,
+            "secret_key": secretKey
+        };
+        const response = await axios.put(url, data);
+        return response.data;
+    },
+    getServerAccount: async () => {
+        const url = `http://${backendServerIp}:${backendServerPort}/server/account`;
+        const response = await axios.get(url);
+        return response.data;
+    },
+    postApiKeys: async (accessKey, secretKey) => {
+        const url = `http://${backendServerIp}:${backendServerPort}/exchange/apiKeys`;
+        const data = {
+            "access_key": accessKey,
+            "secret_key": secretKey
+        };
+        const response = await axios.post(url, data);
+        return response.data;
+    },
+    postAllAccounts: async (accessKey, secretKey) => {
+        const url = `http://${backendServerIp}:${backendServerPort}/exchange/allAccounts`;
+        const data = {
+            "access_key": accessKey,
+            "secret_key": secretKey
+        };
+        const response = await axios.post(url, data);
         return response.data;
     },
 };
