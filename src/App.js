@@ -1,6 +1,5 @@
 import {Route, BrowserRouter as Router} from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
-import atoms from "./states/backend";
 
 import Header from "./pages/Header";
 

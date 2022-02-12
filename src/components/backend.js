@@ -56,6 +56,31 @@ const backend = {
         const response = await axios.post(url, data);
         return response.data;
     },
+    postOrderChance: async (accessKey, secretKey, market) => {
+        const url = `http://${backendServerIp}:${backendServerPort}/exchange/orderChance?market=${market}`;
+        const data = {
+            "access_key": accessKey,
+            "secret_key": secretKey
+        };
+        const response = await axios.post(url, data);
+        return response.data;
+    },
+    postOrders: async (accessKey, secretKey, market, state, states, identifiers, page, limit, order_by) => {
+        let url = `http://${backendServerIp}:${backendServerPort}/exchange/orders?`;
+        url += market ? `market=${market}&` : ``;
+        url += state ? `market=${state}&` : ``;
+        url += states ? `market=${states}&` : ``;
+        url += identifiers ? `market=${identifiers}&` : ``;
+        url += page ? `market=${page}&` : ``;
+        url += limit ? `market=${limit}&` : ``;
+        url += order_by ? `market=${order_by}` : ``;
+        const data = {
+            "access_key": accessKey,
+            "secret_key": secretKey
+        };
+        const response = await axios.post(url, data);
+        return response.data;
+    },
 };
 
 export default backend;

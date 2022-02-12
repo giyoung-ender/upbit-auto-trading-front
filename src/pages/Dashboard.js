@@ -6,10 +6,13 @@ import {useRecoilState} from 'recoil';
 import {useState} from "react";
 import backend from "../components/backend";
 import {FormControl, InputLabel, MenuItem, Select, Box, Grid} from "@mui/material";
+import utils from '../components/utils';
 
 export const Dashboard = () => {
     const [series, setSeries] = useRecoilState(atoms.atomSeries);
     const [options, setOptions] = useRecoilState(atoms.atomOptions);
+    const [seriesBar, setSeriesBar] = useRecoilState(atoms.atomSeriesBar);
+    const [optionsBar, setOptionsBar] = useRecoilState(atoms.atomOptionsBar);
     const [selectedMarketBase, setSelectedMarketBase] = useRecoilState(atoms.selectedMarketBase);
 
     useState(() => {
@@ -18,7 +21,10 @@ export const Dashboard = () => {
                 {
                     name: 'KRW-BTC',
                     data: response.data.map((item) => ({
-                        x: new Date(item?.timestamp),
+                        x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000 ))
+                            .toISOString()
+                            .split("T")[1]
+                            .split('.')[0],
                         y: [
                             item?.opening_price,
                             item?.high_price,
@@ -30,38 +36,75 @@ export const Dashboard = () => {
             ];
             const newOptions = {...options};
             newOptions['title'] = {
-                text: 'KRW-BTC : ' + response.data[response.data.length - 1]?.trade_price,
+                text: 'KRW-BTC : ' + utils.toKRW(response.data[response.data.length - 1]?.trade_price),
                 align: 'left'
             };
             setOptions(newOptions);
             setSeries(marketSeries);
+            setSeriesBar([
+                {
+                    name: 'KRW-BTC',
+                    data: response.data.map((item) => ({
+                        x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000 ))
+                            .toISOString()
+                            .split("T")[1]
+                            .split('.')[0],
+                        y: item?.candle_acc_trade_price
+                    })),
+                }
+            ]);
         });
-    }, [selectedMarketBase]);
+        backend.getServerAccount().then(({access_key, secret_key}) => {
+            backend.postOrderChance(access_key, secret_key, 'KRW-BTC').then(result => console.log(result));
+        });
+    }, []);
 
     const Chart = () => {
-        return (<ApexCharts
-            options={options}
-            series={series}
-            type='candlestick'
-            width='100%'
-            height='auto'
-        />);
+        return (
+            <Box>
+                <ApexCharts
+                    id={'mainChart'}
+                    options={options}
+                    series={series}
+                    type='candlestick'
+                    width='100%'
+                    height='auto'
+                />
+                <ApexCharts
+                    options={optionsBar}
+                    series={seriesBar}
+                    type="bar"
+                    width='100%'
+                    height='30%'
+                />
+            </Box>
+        );
     };
 
     const ChartMenu = () => {
         return (
-            <Box sx={{minWidth: 120}}>
-                <FormControl sx={{width: '50%'}}>
-                    <InputLabel id="demo-simple-select-label">market</InputLabel>
+            <Box sx={{minWidth: '100%'}}>
+                <FormControl sx={{width: '100%'}}>
+                    <InputLabel>market</InputLabel>
                     <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
                         value={selectedMarketBase}
                         label="market"
                     >
-                        <MenuItem value={'KRW'} onClick={() => setSelectedMarketBase('KRW')}>KRW</MenuItem>
-                        <MenuItem value={'BTC'} onClick={() => setSelectedMarketBase('BTC')}>BTC</MenuItem>
-                        <MenuItem value={'USDT'} onClick={() => setSelectedMarketBase('USDT')}>USDT</MenuItem>
+                        <MenuItem
+                            value={'KRW'}
+                            onClick={() => setSelectedMarketBase('KRW')}>
+                            KRW
+                        </MenuItem>
+                        <MenuItem
+                            value={'BTC'}
+                            onClick={() => setSelectedMarketBase('BTC')}>
+                            BTC
+                        </MenuItem>
+                        <MenuItem
+                            value={'USDT'}
+                            onClick={() => setSelectedMarketBase('USDT')}>
+                            USDT
+                        </MenuItem>
                     </Select>
                 </FormControl>
             </Box>);
@@ -70,11 +113,11 @@ export const Dashboard = () => {
     return (
         <Box sx={{flexGrow: 1}}>
             <Grid container spacing={1}>
-                <Grid item xs={10}>
-                    <ChartMenu/>
+                <Grid item xs={10} sx={{paddingLeft: 2}}>
                     <Chart/>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={2} sx={{paddingRight: 2}}>
+                    <ChartMenu/>
                     <MarketList/>
                 </Grid>
             </Grid>

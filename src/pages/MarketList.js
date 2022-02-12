@@ -5,22 +5,24 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import axios from "axios";
 import {useEffect, useState} from "react";
-import {useRecoilState} from 'recoil';
+import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import backend from "../components/backend";
 import atoms from "../states/backend";
+import utils from "../components/utils";
 
 axios.defaults.withCredentials = true;
 
 export default function MarketList() {
     const [marketList, setMarketList] = React.useState([]);
     const [selectedMarket, setSelectedMarket] = React.useState("");
-    const [series, setSeries] = useRecoilState(atoms.atomSeries);
-    const [selectedMarketBase, setSelectedMarketBase] = useRecoilState(atoms.selectedMarketBase);
+    const setSeries = useSetRecoilState(atoms.atomSeries);
+    const selectedMarketBase = useRecoilValue(atoms.selectedMarketBase);
     const [options, setOptions] = useRecoilState(atoms.atomOptions);
+    const [seriesBar, setSeriesBar] = useRecoilState(atoms.atomSeriesBar);
 
-    useEffect(async () => {
-        await getMarketList();
-    }, [selectedMarketBase]);
+    useEffect(() => {
+        getMarketList().then(r => {});
+    }, []);
 
     const getMarketList = async () => {
         const response = await backend.getMarketAll();
@@ -29,6 +31,7 @@ export default function MarketList() {
         let BTCMarketList = [];
         let USDTMarketList = [];
         response?.data.forEach((item) => {
+            // eslint-disable-next-line default-case
             switch (item?.market.split('-')[0]) {
                 case 'KRW':
                     KRWMarketList.push(item?.market);
@@ -42,6 +45,7 @@ export default function MarketList() {
             }
         });
         const event = {target: {outerText: {}}};
+        // eslint-disable-next-line default-case
         switch (selectedMarketBase) {
             case 'KRW':
                 setMarketList(KRWMarketList);
@@ -67,7 +71,10 @@ export default function MarketList() {
             {
                 name: market,
                 data: response.data.map((item) => ({
-                    x: new Date(item?.timestamp),
+                    x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000 ))
+                        .toISOString()
+                        .split("T")[1]
+                        .split('.')[0],
                     y: [
                         item?.opening_price,
                         item?.high_price,
@@ -79,17 +86,25 @@ export default function MarketList() {
         ];
         const newOptions = {...options};
         newOptions['title'] = {
-            text: market + ' : ' + response.data[response.data.length - 1]?.trade_price,
+            text: market + ' : ' + utils.toKRW(response.data[response.data.length - 1]?.trade_price),
             align: 'left'
         };
         setOptions(newOptions);
         setSelectedMarket(market);
         setSeries(marketSeries);
+        setSeriesBar([
+            {
+                name: 'KRW-BTC',
+                data: response.data.map((item) => ({
+                    x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000 ))
+                        .toISOString()
+                        .split("T")[1]
+                        .split('.')[0],
+                    y: item?.candle_acc_trade_price
+                })),
+            }
+        ]);
     }
-
-    useState(async () => {
-        await getMarketList();
-    }, []);
 
     return (
         <Box sx={{width: 'auto', bgcolor: 'background.paper'}}>
@@ -97,12 +112,12 @@ export default function MarketList() {
                 component="nav"
                 aria-label="secondary mailbox folder"
                 sx={{
+                    marginTop: 2,
                     width: '100%',
-                    //maxWidth: 360,
                     bgcolor: 'background.paper',
                     position: 'relative',
                     overflow: 'auto',
-                    maxHeight: 720,
+                    height: 720,
                     '& ul': {padding: 0},
                 }}
             >
