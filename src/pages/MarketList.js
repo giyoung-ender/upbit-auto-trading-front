@@ -22,7 +22,7 @@ export default function MarketList() {
 
     useEffect(() => {
         getMarketList().then(r => {});
-    }, []);
+    }, [selectedMarketBase]);
 
     const getMarketList = async () => {
         const response = await backend.getMarketAll();
@@ -85,10 +85,28 @@ export default function MarketList() {
             }
         ];
         const newOptions = {...options};
-        newOptions['title'] = {
-            text: market + ' : ' + utils.toKRW(response.data[response.data.length - 1]?.trade_price),
-            align: 'left'
-        };
+        switch (selectedMarketBase){
+            case 'KRW':
+                newOptions['title'] = {
+                    text: market + ' : ' + utils.toKRW(response.data[response.data.length - 1]?.trade_price),
+                    align: 'left'
+                };
+                break;
+            case 'USDT':
+                newOptions['title'] = {
+                    text: market + ' : ' + utils.toUSDT(response.data[response.data.length - 1]?.trade_price),
+                    align: 'left'
+                };
+                break;
+            case 'BTC':
+                newOptions['title'] = {
+                    text: market + ' : ' + utils.toBTC(response.data[response.data.length - 1]?.trade_price),
+                    align: 'left'
+                };
+                break;
+            default:
+                return ;
+        }
         setOptions(newOptions);
         setSelectedMarket(market);
         setSeries(marketSeries);

@@ -5,7 +5,7 @@ import * as React from 'react';
 import {useRecoilState} from 'recoil';
 import {useState} from "react";
 import backend from "../components/backend";
-import {FormControl, InputLabel, MenuItem, Select, Box, Grid} from "@mui/material";
+import {FormControl, InputLabel, MenuItem, Select, Box, Grid, Tabs, Tab} from "@mui/material";
 import utils from '../components/utils';
 
 export const Dashboard = () => {
@@ -21,7 +21,7 @@ export const Dashboard = () => {
                 {
                     name: 'KRW-BTC',
                     data: response.data.map((item) => ({
-                        x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000 ))
+                        x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000))
                             .toISOString()
                             .split("T")[1]
                             .split('.')[0],
@@ -45,7 +45,7 @@ export const Dashboard = () => {
                 {
                     name: 'KRW-BTC',
                     data: response.data.map((item) => ({
-                        x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000 ))
+                        x: new Date(new Date(item?.timestamp).getTime() - (new Date(item?.timestamp).getTimezoneOffset() * 60000))
                             .toISOString()
                             .split("T")[1]
                             .split('.')[0],
@@ -82,32 +82,17 @@ export const Dashboard = () => {
     };
 
     const ChartMenu = () => {
-        return (
-            <Box sx={{minWidth: '100%'}}>
-                <FormControl sx={{width: '100%'}}>
-                    <InputLabel>market</InputLabel>
-                    <Select
-                        value={selectedMarketBase}
-                        label="market"
-                    >
-                        <MenuItem
-                            value={'KRW'}
-                            onClick={() => setSelectedMarketBase('KRW')}>
-                            KRW
-                        </MenuItem>
-                        <MenuItem
-                            value={'BTC'}
-                            onClick={() => setSelectedMarketBase('BTC')}>
-                            BTC
-                        </MenuItem>
-                        <MenuItem
-                            value={'USDT'}
-                            onClick={() => setSelectedMarketBase('USDT')}>
-                            USDT
-                        </MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>);
+        return (<Box sx={{minWidth: '100%'}}>
+            <Tabs
+                value={selectedMarketBase}
+                scrollButtons="auto"
+                variant="scrollable"
+            >
+                <Tab label="KRW" value={"KRW"} onClick={() => setSelectedMarketBase('KRW')}/>
+                <Tab label="BTC" value={"BTC"} onClick={() => setSelectedMarketBase('BTC')}/>
+                <Tab label="USDT" value={"USDT"} onClick={() => setSelectedMarketBase('USDT')}/>
+            </Tabs>
+        </Box>);
     };
 
     return (
